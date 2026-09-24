@@ -1,0 +1,24 @@
+[package]
+name = "axis"
+version = "0.1.0"
+description = "AXIS desktop AI control platform"
+authors = ["AXIS"]
+edition = "2021"
+rust-version = "1.88"
+
+[lib]
+name = "axis_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true
+opt-level = "s"
+strip = true

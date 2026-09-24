@@ -1,0 +1,119 @@
+:root {
+  color-scheme: dark;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI Variable", "Segoe UI", Inter, sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-2xs: 0.6875rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-md: 0.9375rem;
+  --text-lg: 1.0625rem;
+  --text-xl: 1.25rem;
+  --text-2xl: clamp(1.75rem, 2.4vw, 2.25rem);
+
+  /* Layout and spacing */
+  --titlebar-height: 46px;
+  --sidebar-width: 236px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Shape */
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --ease-standard: cubic-bezier(0.2, 0.75, 0.25, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 320ms;
+
+  /* Dark theme — the primary AXIS experience */
+  --color-canvas: #0b0c0e;
+  --color-titlebar: #0d0e10;
+  --color-sidebar: #101114;
+  --color-content: #0d0f11;
+  --color-surface-1: #131519;
+  --color-surface-2: #17191d;
+  --color-surface-3: #1c1f24;
+  --color-surface-hover: #202329;
+  --color-surface-active: #252931;
+  --color-text: #f2f3f1;
+  --color-text-secondary: #a3a6ac;
+  --color-text-tertiary: #74777f;
+  --color-text-disabled: #5d6067;
+  --color-border: rgba(255, 255, 255, 0.075);
+  --color-border-strong: rgba(255, 255, 255, 0.12);
+  --color-border-subtle: rgba(255, 255, 255, 0.045);
+  --color-accent: #8ca3f6;
+  --color-accent-strong: #a6b7fa;
+  --color-accent-soft: rgba(124, 151, 245, 0.11);
+  --color-accent-border: rgba(140, 163, 246, 0.26);
+  --color-positive: #7dc99a;
+  --color-positive-soft: rgba(82, 165, 116, 0.12);
+  --color-warning: #d3ae6d;
+  --color-warning-soft: rgba(195, 144, 63, 0.12);
+  --color-danger: #e17e7e;
+  --color-primary-button: #eef0f2;
+  --color-primary-button-hover: #ffffff;
+  --color-primary-button-text: #101114;
+  --color-backdrop: rgba(3, 4, 5, 0.72);
+  --axis-mark-ink: #111216;
+
+  /* Depth */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.025) inset, 0 14px 36px rgba(0, 0, 0, 0.18);
+  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 24px 64px rgba(0, 0, 0, 0.27);
+  --shadow-dialog: 0 30px 90px rgba(0, 0, 0, 0.52);
+  --focus-ring: 0 0 0 3px rgba(140, 163, 246, 0.25);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-canvas: #ececea;
+  --color-titlebar: #f0f0ed;
+  --color-sidebar: #eeeeeb;
+  --color-content: #f7f7f5;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #f8f8f6;
+  --color-surface-3: #f0f1ee;
+  --color-surface-hover: #e9eae7;
+  --color-surface-active: #e3e4e1;
+  --color-text: #17181a;
+  --color-text-secondary: #62656a;
+  --color-text-tertiary: #6e7176;
+  --color-text-disabled: #a4a6aa;
+  --color-border: rgba(18, 20, 23, 0.09);
+  --color-border-strong: rgba(18, 20, 23, 0.14);
+  --color-border-subtle: rgba(18, 20, 23, 0.055);
+  --color-accent: #4866ca;
+  --color-accent-strong: #3857bd;
+  --color-accent-soft: rgba(72, 102, 202, 0.085);
+  --color-accent-border: rgba(72, 102, 202, 0.2);
+  --color-positive: #347b51;
+  --color-positive-soft: rgba(52, 123, 81, 0.09);
+  --color-warning: #916c2e;
+  --color-warning-soft: rgba(145, 108, 46, 0.09);
+  --color-danger: #b64a4a;
+  --color-primary-button: #1a1b1d;
+  --color-primary-button-hover: #050607;
+  --color-primary-button-text: #ffffff;
+  --color-backdrop: rgba(26, 28, 30, 0.42);
+  --axis-mark-ink: #ffffff;
+  --shadow-card: 0 1px 2px rgba(20, 22, 25, 0.025), 0 10px 28px rgba(20, 22, 25, 0.045);
+  --shadow-raised: 0 1px 2px rgba(20, 22, 25, 0.035), 0 20px 54px rgba(20, 22, 25, 0.075);
+  --shadow-dialog: 0 30px 90px rgba(24, 27, 31, 0.2);
+  --focus-ring: 0 0 0 3px rgba(72, 102, 202, 0.2);
+}

@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Frontend output
+dist/
+*.tsbuildinfo
+
+# Tauri / Rust
+src-tauri/target/
+
+# Environment overrides
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Logs
+*.log
+npm-debug.log*
