@@ -1,161 +1,109 @@
 import {
+  Activity,
   ArrowRight,
   Bot,
   Boxes,
-  Check,
   CircleGauge,
   Clock3,
-  Command,
-  FolderKanban,
-  LockKeyhole,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
 import { StatusIndicator } from "../components/ui/StatusIndicator";
-
-const setupItems = [
-  {
-    icon: Bot,
-    title: "Choose your AI",
-    detail: "Provider connections are prepared for a future phase.",
-    path: "/ai",
-    action: "View AI setup",
-  },
-  {
-    icon: Boxes,
-    title: "Review supported apps",
-    detail: "Explore the connector foundation without simulated connections.",
-    path: "/apps",
-    action: "Browse apps",
-  },
-  {
-    icon: FolderKanban,
-    title: "Organize work in projects",
-    detail: "Project creation will arrive with real local persistence.",
-    path: "/projects",
-    action: "View projects",
-  },
-] as const;
+import { CommandComposer } from "../features/command/CommandComposer";
+import { useCommand } from "../features/command/CommandProvider";
+import { useNotifications } from "../features/notifications/NotificationProvider";
+import { useSystemStatus } from "../features/system/SystemStatusProvider";
 
 export function HomePage() {
-  const [command, setCommand] = useState("");
+  const commandInputRef = useRef<HTMLTextAreaElement>(null);
+  const { draft, setDraft, focusRequest } = useCommand();
+  const { notify } = useNotifications();
+  const systemStatus = useSystemStatus();
+
+  useEffect(() => {
+    if (focusRequest === 0) return;
+    window.requestAnimationFrame(() => commandInputRef.current?.focus());
+  }, [focusRequest]);
+
+  const explainUnavailableExecution = () => {
+    notify({
+      tone: "information",
+      title: "Command execution is not available yet",
+      message: "Your draft was not submitted. AI execution arrives in a later phase.",
+    });
+  };
 
   return (
     <section className="page page--home">
       <PageHeader
-        eyebrow="Home"
+        eyebrow="Workspace"
         title="What would you like to accomplish?"
-        description="Describe the outcome. AXIS will eventually plan the work and coordinate the right tools."
-        actions={<StatusIndicator label="Foundation ready" tone="ready" />}
+        description="Start with the outcome. AXIS is being built to plan the work and coordinate the right tools."
       />
 
-      <Card className="command-surface" tone="raised">
-        <div className="command-surface__topline">
-          <div className="command-surface__identity">
-            <span className="command-surface__icon" aria-hidden="true">
-              <Command size={18} strokeWidth={1.8} />
-            </span>
-            <div>
-              <span className="command-surface__label">Command workspace</span>
-              <span className="command-surface__hint">Natural-language tasks</span>
-            </div>
-          </div>
-          <Badge tone="warning">Setup required</Badge>
-        </div>
-
-        <label className="command-composer">
-          <span className="sr-only">Tell AXIS what you want to accomplish</span>
-          <textarea
-            value={command}
-            onChange={(event) => setCommand(event.target.value)}
-            placeholder="Tell AXIS what you want to accomplish..."
-            rows={3}
-            maxLength={1200}
-          />
-        </label>
-
-        <div className="command-surface__footer">
-          <div className="command-privacy-note">
-            <LockKeyhole size={14} aria-hidden="true" />
-            <span>Commands are not submitted or executed in Phase 1.</span>
-          </div>
-          <Link className="button button--primary button--medium" to="/ai">
-            <span className="button__label">Configure AI</span>
-            <span className="button__icon">
-              <ArrowRight size={15} aria-hidden="true" />
-            </span>
+      <CommandComposer
+        ref={commandInputRef}
+        value={draft}
+        onValueChange={setDraft}
+        onUnavailableAttempt={explainUnavailableExecution}
+        status="unavailable"
+        action={
+          <Link className="button button--secondary button--medium" to="/ai">
+            <span className="button__label">Review AI setup</span>
+            <span className="button__icon"><ArrowRight size={14} aria-hidden="true" /></span>
           </Link>
-        </div>
-      </Card>
+        }
+      />
 
-      <div className="home-overview">
-        <Card className="setup-panel">
-          <div className="section-heading">
+      <div className="home-context-grid">
+        <Card className="home-activity-empty" tone="subtle">
+          <div className="home-panel-heading">
             <div>
-              <p className="section-heading__eyebrow">Getting started</p>
-              <h2>Prepare your workspace</h2>
+              <p className="section-heading__eyebrow">Recent activity</p>
+              <h2>Your work will appear here</h2>
             </div>
-            <span className="section-heading__meta">0 of 3</span>
+            <Clock3 size={17} aria-hidden="true" />
           </div>
-
-          <div className="setup-list">
-            {setupItems.map((item, index) => (
-              <Link className="setup-item" to={item.path} key={item.title}>
-                <span className="setup-item__number">0{index + 1}</span>
-                <span className="setup-item__icon" aria-hidden="true">
-                  <item.icon size={17} strokeWidth={1.8} />
-                </span>
-                <span className="setup-item__copy">
-                  <strong>{item.title}</strong>
-                  <span>{item.detail}</span>
-                </span>
-                <span className="setup-item__action">
-                  {item.action}
-                  <ArrowRight size={14} aria-hidden="true" />
-                </span>
-              </Link>
-            ))}
+          <div className="home-activity-empty__body">
+            <span className="home-activity-empty__icon" aria-hidden="true">
+              <Activity size={20} strokeWidth={1.7} />
+            </span>
+            <div>
+              <strong>No tasks have run</strong>
+              <p>When execution is introduced, completed tasks and approval events will be visible here.</p>
+            </div>
           </div>
+          <Link className="home-panel-link" to="/activity">
+            Open activity <ArrowRight size={13} aria-hidden="true" />
+          </Link>
         </Card>
 
-        <div className="home-side-stack">
-          <Card className="readiness-card" tone="subtle">
-            <div className="section-heading section-heading--compact">
-              <div>
-                <p className="section-heading__eyebrow">System</p>
-                <h2>Runtime readiness</h2>
-              </div>
-              <CircleGauge size={18} aria-hidden="true" />
-            </div>
-            <div className="readiness-list">
-              <div className="readiness-row">
-                <span><Check size={14} aria-hidden="true" />Desktop shell</span>
-                <Badge tone="positive">Ready</Badge>
-              </div>
-              <div className="readiness-row">
-                <span><Bot size={14} aria-hidden="true" />AI provider</span>
-                <Badge>Not configured</Badge>
-              </div>
-              <div className="readiness-row">
-                <span><Boxes size={14} aria-hidden="true" />App connectors</span>
-                <Badge>None connected</Badge>
-              </div>
-            </div>
-          </Card>
-
-          <Card className="recent-card" tone="subtle">
-            <div className="recent-card__icon" aria-hidden="true">
-              <Clock3 size={18} />
-            </div>
+        <Card className="home-snapshot" tone="subtle">
+          <div className="home-panel-heading">
             <div>
-              <h2>No recent activity</h2>
-              <p>Completed tasks and approvals will appear here once execution is available.</p>
+              <p className="section-heading__eyebrow">Workspace state</p>
+              <h2>Local foundation</h2>
             </div>
-          </Card>
-        </div>
+            <StatusIndicator label={systemStatus.label} tone={systemStatus.tone} compact />
+          </div>
+          <div className="home-snapshot__rows">
+            <Link to="/ai" className="home-snapshot__row">
+              <span><Bot size={15} aria-hidden="true" />AI provider</span>
+              <Badge>Not configured</Badge>
+            </Link>
+            <Link to="/apps" className="home-snapshot__row">
+              <span><Boxes size={15} aria-hidden="true" />Connected apps</span>
+              <Badge>0 connected</Badge>
+            </Link>
+            <Link to="/points" className="home-snapshot__row">
+              <span><CircleGauge size={15} aria-hidden="true" />Points</span>
+              <Badge>Not active</Badge>
+            </Link>
+          </div>
+        </Card>
       </div>
     </section>
   );

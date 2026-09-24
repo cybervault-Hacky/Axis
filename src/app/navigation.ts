@@ -34,5 +34,5 @@ export const utilityNavigation: NavigationItem[] = [
 export const getPageTitle = (pathname: string): string => {
   const allItems = [...primaryNavigation, ...utilityNavigation];
   return allItems.find(({ path }) => (path === "/" ? pathname === "/" : pathname.startsWith(path)))
-    ?.label ?? "AXIS";
+    ?.label ?? "Not found";
 };

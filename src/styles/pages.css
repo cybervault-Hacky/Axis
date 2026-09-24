@@ -1640,9 +1640,9 @@
 
   .settings-nav {
     flex-direction: row;
+    flex-wrap: wrap;
     gap: 4px;
     padding-bottom: 6px;
-    overflow-x: auto;
   }
 
   .settings-nav__item {

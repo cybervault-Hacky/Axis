@@ -1,5 +1,6 @@
 import { Boxes, SearchX } from "lucide-react";
 import { useDeferredValue, useMemo, useState } from "react";
+import { IntegrationCard } from "../components/cards/IntegrationCard";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { EmptyState } from "../components/ui/EmptyState";
@@ -62,24 +63,14 @@ export function AppsPage() {
       {filteredApps.length > 0 ? (
         <div className="apps-grid" aria-live="polite">
           {filteredApps.map((app) => (
-            <Card className="app-card" key={app.name}>
-              <div className="app-card__topline">
-                <span className="app-card__icon" aria-hidden="true">
-                  <app.icon size={22} strokeWidth={1.6} />
-                </span>
-                <Badge>Coming later</Badge>
-              </div>
-              <div className="app-card__copy">
-                <h2>{app.name}</h2>
-                <p>{app.description}</p>
-              </div>
-              <div className="app-card__footer">
-                <span>{app.category}</span>
-                <span className="app-card__state">
-                  <span aria-hidden="true" />Not connected
-                </span>
-              </div>
-            </Card>
+            <IntegrationCard
+              key={app.name}
+              name={app.name}
+              description={app.description}
+              category={app.category}
+              icon={app.icon}
+              state="coming-soon"
+            />
           ))}
         </div>
       ) : (
@@ -96,7 +87,7 @@ export function AppsPage() {
       <div className="apps-foundation-note">
         <Boxes size={16} aria-hidden="true" />
         <p>
-          <strong>Connector foundation only.</strong> No apps are connected and no external app control is simulated in Phase 1.
+          <strong>Connector foundation only.</strong> No apps are connected and no external app control is simulated in Phase 2.
         </p>
       </div>
     </section>

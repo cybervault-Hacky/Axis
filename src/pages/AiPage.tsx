@@ -81,7 +81,7 @@ export function AiPage() {
           </ol>
           <div className="provider-steps-card__note">
             <LockKeyhole size={15} aria-hidden="true" />
-            <span>No API keys are requested or stored in Phase 1.</span>
+            <span>No API keys are requested or stored in Phase 2.</span>
           </div>
         </Card>
       </div>

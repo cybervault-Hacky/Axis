@@ -1,9 +1,10 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { AppShell } from "../components/layout/AppShell";
 import { ActivityPage } from "../pages/ActivityPage";
 import { AiPage } from "../pages/AiPage";
 import { AppsPage } from "../pages/AppsPage";
 import { HomePage } from "../pages/HomePage";
+import { NotFoundPage } from "../pages/NotFoundPage";
 import { PointsPage } from "../pages/PointsPage";
 import { ProjectsPage } from "../pages/ProjectsPage";
 import { SettingsPage } from "../pages/SettingsPage";
@@ -21,7 +22,7 @@ export function App() {
         <Route path="activity" element={<ActivityPage />} />
         <Route path="points" element={<PointsPage />} />
         <Route path="settings" element={<SettingsPage />} />
-        <Route path="*" element={<Navigate replace to="/" />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

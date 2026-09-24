@@ -38,6 +38,7 @@ export function ActivityPage() {
             <span role="columnheader">Task</span>
             <span role="columnheader">Application</span>
             <span role="columnheader">Status</span>
+            <span role="columnheader">Duration</span>
             <span role="columnheader">Time</span>
           </div>
           <div className="activity-table__empty" role="row">
@@ -48,7 +49,7 @@ export function ActivityPage() {
                 title={query ? "No activity matches your search" : "Nothing has run yet"}
                 description={
                   query
-                    ? "There are no execution records in Phase 1."
+                    ? "There are no execution records in Phase 2."
                     : "AXIS will show truthful execution history here once tasks can run. No sample records have been fabricated."
                 }
               />
@@ -58,7 +59,7 @@ export function ActivityPage() {
       </Card>
 
       <p className="table-footnote">
-        Activity records will include status, timestamps, involved apps, and execution details.
+        Activity records will include status, duration, timestamps, involved apps, and execution details.
       </p>
     </section>
   );

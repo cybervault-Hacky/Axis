@@ -1,11 +1,16 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
-import { Maximize2, Minus, X } from "lucide-react";
+import { Maximize2, Minus, PanelLeftClose, PanelLeftOpen, Search, X } from "lucide-react";
+import { useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { APP_CONFIG } from "../../app/config";
 import { getPageTitle } from "../../app/navigation";
+import { APP_SHORTCUTS, formatShortcut, isMacPlatform } from "../../app/shortcuts";
+import { useCommand } from "../../features/command/CommandProvider";
+import { useUIPreferences } from "../../features/preferences/UIPreferencesProvider";
+import { useSystemStatus } from "../../features/system/SystemStatusProvider";
 import { AxisMark } from "../icons/AxisMark";
-import { Badge } from "../ui/Badge";
 import { StatusIndicator } from "../ui/StatusIndicator";
+import { Tooltip } from "../ui/Tooltip";
 
 const isTauriRuntime = () => "__TAURI_INTERNALS__" in window;
 
@@ -22,26 +27,59 @@ async function runWindowAction(action: WindowAction): Promise<void> {
 
 export function TitleBar() {
   const { pathname } = useLocation();
+  const { openPalette } = useCommand();
+  const { sidebarCollapsed, compactViewport, toggleSidebar } = useUIPreferences();
+  const systemStatus = useSystemStatus();
   const title = getPageTitle(pathname);
+  const shortcutLabel = useMemo(
+    () => formatShortcut(APP_SHORTCUTS.commandPalette, isMacPlatform()),
+    [],
+  );
 
   return (
     <header className="titlebar" data-tauri-drag-region>
       <div className="titlebar__brand" data-tauri-drag-region>
         <AxisMark className="titlebar__mark" size={23} />
         <span className="titlebar__wordmark">{APP_CONFIG.name}</span>
+        {!compactViewport && (
+          <Tooltip label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"} placement="bottom">
+            <button
+              className="titlebar__sidebar-toggle"
+              type="button"
+              aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              aria-expanded={!sidebarCollapsed}
+              onClick={toggleSidebar}
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen size={15} strokeWidth={1.7} aria-hidden="true" />
+              ) : (
+                <PanelLeftClose size={15} strokeWidth={1.7} aria-hidden="true" />
+              )}
+            </button>
+          </Tooltip>
+        )}
       </div>
 
       <div className="titlebar__context" data-tauri-drag-region>
         <span className="titlebar__page" data-tauri-drag-region>
           {title}
         </span>
+        <button
+          className="titlebar__command-trigger"
+          type="button"
+          onClick={openPalette}
+          aria-label={`Open command palette, ${shortcutLabel}`}
+        >
+          <Search size={14} strokeWidth={1.8} aria-hidden="true" />
+          <span>Search or navigate</span>
+          <kbd>{shortcutLabel}</kbd>
+        </button>
       </div>
 
       <div className="titlebar__tools">
-        <Badge className="titlebar__phase">Foundation</Badge>
         <StatusIndicator
-          label="Ready"
-          tone="ready"
+          label={systemStatus.label}
+          tone={systemStatus.tone}
           compact
           className="titlebar__status"
         />

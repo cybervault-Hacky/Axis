@@ -9,6 +9,8 @@ import {
   Monitor,
   Moon,
   Palette,
+  PanelLeft,
+  PanelLeftClose,
   Settings2,
   ShieldCheck,
   Sun,
@@ -21,6 +23,8 @@ import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
 import { StatusIndicator } from "../components/ui/StatusIndicator";
+import { useNotifications } from "../features/notifications/NotificationProvider";
+import { useUIPreferences } from "../features/preferences/UIPreferencesProvider";
 import { useTheme } from "../features/theme/ThemeProvider";
 import type { ThemePreference } from "../features/theme/theme";
 import { classNames } from "../lib/classNames";
@@ -68,32 +72,54 @@ function SettingsPanel({ title, description, children }: SettingsPanelProps) {
 }
 
 function GeneralSettings() {
+  const { sidebarPreference, compactViewport, setSidebarPreference } = useUIPreferences();
+
   return (
     <SettingsPanel
       title="General"
-      description="Core application details for this desktop foundation."
+      description="Core interface preferences for this desktop workspace."
     >
       <Card className="settings-card">
         <div className="setting-row">
           <span><strong>Application</strong><small>Desktop product name</small></span>
           <span className="setting-row__value">{APP_CONFIG.name}</span>
         </div>
-        <div className="setting-row">
-          <span><strong>Language</strong><small>Interface language</small></span>
-          <span className="setting-row__value">English</span>
+        <div className="setting-row setting-row--choice">
+          <span><strong>Sidebar</strong><small>Choose a comfortable navigation width</small></span>
+          <div className="setting-choice" role="group" aria-label="Sidebar appearance">
+            <button
+              type="button"
+              aria-pressed={sidebarPreference === "expanded"}
+              disabled={compactViewport}
+              onClick={() => setSidebarPreference("expanded")}
+            >
+              <PanelLeft size={14} aria-hidden="true" />Expanded
+            </button>
+            <button
+              type="button"
+              aria-pressed={sidebarPreference === "collapsed"}
+              disabled={compactViewport}
+              onClick={() => setSidebarPreference("collapsed")}
+            >
+              <PanelLeftClose size={14} aria-hidden="true" />Compact
+            </button>
+          </div>
         </div>
         <div className="setting-row">
           <span><strong>Environment</strong><small>Current product foundation</small></span>
           <Badge>{APP_CONFIG.phase}</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">Startup and workspace preferences will be added only when they have real native behavior.</p>
+      <p className="settings-context-note">
+        AXIS automatically uses compact navigation in smaller windows. Press Ctrl or Command + K to search and navigate.
+      </p>
     </SettingsPanel>
   );
 }
 
 function AppearanceSettings() {
   const { preference, resolvedTheme, setPreference } = useTheme();
+  const { notify } = useNotifications();
 
   return (
     <SettingsPanel
@@ -107,7 +133,15 @@ function AppearanceSettings() {
             type="button"
             className={classNames("theme-option", preference === theme.id && "theme-option--selected")}
             aria-pressed={preference === theme.id}
-            onClick={() => setPreference(theme.id)}
+            onClick={() => {
+              if (preference === theme.id) return;
+              setPreference(theme.id);
+              notify({
+                tone: "success",
+                title: "Appearance updated",
+                message: `${theme.title} mode is now selected.`,
+              });
+            }}
           >
             <span className={classNames("theme-preview", `theme-preview--${theme.id}`)} aria-hidden="true">
               <span className="theme-preview__sidebar" />
@@ -134,11 +168,7 @@ function AppearanceSettings() {
   );
 }
 
-function LinkedSettings({
-  type,
-}: {
-  type: "ai" | "apps";
-}) {
+function LinkedSettings({ type }: { type: "ai" | "apps" }) {
   const isAi = type === "ai";
   return (
     <SettingsPanel
@@ -201,7 +231,7 @@ function SecuritySettings() {
           <Badge tone="positive">Inactive</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">No simulated vault, credential validation, or security claims are included in Phase 1.</p>
+      <p className="settings-context-note">No simulated vault, credential validation, or security claims are included in Phase 2.</p>
     </SettingsPanel>
   );
 }
@@ -210,12 +240,13 @@ function NotificationSettings() {
   return (
     <SettingsPanel
       title="Notifications"
-      description="Task and approval notifications will be configured when background work exists."
+      description="AXIS uses restrained in-app messages for immediate interface feedback."
     >
       <Card className="settings-state-card" tone="subtle">
-        <StatusIndicator label="No notifications configured" detail="AXIS does not run background tasks in Phase 1." tone="idle" />
-        <Badge>Coming later</Badge>
+        <StatusIndicator label="In-app feedback ready" detail="Local interface updates can appear as dismissible messages." tone="ready" />
+        <Badge tone="positive">Active</Badge>
       </Card>
+      <p className="settings-context-note">System notifications for background tasks and approvals will only be added when those capabilities exist.</p>
     </SettingsPanel>
   );
 }
@@ -234,7 +265,7 @@ function AboutSettings() {
           <Badge>{APP_CONFIG.phase}</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">AI execution, app integrations, billing, and workflow runs are reserved for future phases.</p>
+      <p className="settings-context-note">AI execution, app integrations, billing, and workflow runs remain reserved for future phases.</p>
     </SettingsPanel>
   );
 }

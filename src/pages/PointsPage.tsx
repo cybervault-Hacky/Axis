@@ -93,10 +93,24 @@ export function PointsPage() {
         </Card>
       </div>
 
+      <Card className="points-history-card" tone="subtle">
+        <div className="points-history-card__heading">
+          <div>
+            <p className="section-heading__eyebrow">Transaction history</p>
+            <h2>No point activity</h2>
+          </div>
+          <Badge>0 events</Badge>
+        </div>
+        <div className="points-history-card__empty">
+          <ReceiptText size={18} aria-hidden="true" />
+          <p>Future point allocations and usage events will be listed here with clear task context.</p>
+        </div>
+      </Card>
+
       <div className="points-notice">
         <Info size={16} aria-hidden="true" />
         <p>
-          <strong>Points and billing are not implemented in Phase 1.</strong> No balance is calculated and no points can be spent or deducted.
+          <strong>Points and billing are not implemented in Phase 2.</strong> No balance is calculated and no points can be spent or deducted.
         </p>
       </div>
     </section>

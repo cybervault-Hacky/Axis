@@ -94,7 +94,7 @@ export function WorkflowsPage() {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         title="Workflow execution is not active"
-        description="Phase 1 establishes the experience without pretending to run tools or background tasks."
+        description="Phase 2 establishes the experience without pretending to run tools or background tasks."
         footer={
           <Button variant="primary" onClick={() => setDialogOpen(false)}>
             Understood

@@ -14,7 +14,9 @@
 
   /* Layout and spacing */
   --titlebar-height: 46px;
-  --sidebar-width: 236px;
+  --sidebar-expanded-width: 224px;
+  --sidebar-collapsed-width: 72px;
+  --sidebar-width: var(--sidebar-expanded-width);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -53,7 +55,7 @@
   --color-surface-active: #252931;
   --color-text: #f2f3f1;
   --color-text-secondary: #a3a6ac;
-  --color-text-tertiary: #74777f;
+  --color-text-tertiary: #7c7f87;
   --color-text-disabled: #5d6067;
   --color-border: rgba(255, 255, 255, 0.075);
   --color-border-strong: rgba(255, 255, 255, 0.12);

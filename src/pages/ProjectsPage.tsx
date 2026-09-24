@@ -46,7 +46,7 @@ export function ProjectsPage() {
           title={query ? "No projects to search yet" : "Your projects will live here"}
           description={
             query
-              ? "Project search is ready, but no project records exist in Phase 1."
+              ? "Project search is ready, but no project records exist in Phase 2."
               : "Create focused workspaces for goals, source files, instructions, and future AXIS runs. Real project persistence is planned for a later phase."
           }
           action={
@@ -67,7 +67,7 @@ export function ProjectsPage() {
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         title="Project creation is coming later"
-        description="The entry point is in place, but AXIS does not create or store projects in Phase 1."
+        description="The entry point is in place, but AXIS does not create or store projects in Phase 2."
         footer={
           <Button variant="primary" onClick={() => setDialogOpen(false)}>
             Got it
