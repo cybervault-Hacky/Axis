@@ -113,6 +113,91 @@ describe("provider configuration UI", () => {
     expect(await screen.findByRole("button", { name: "Save key" })).toBeDisabled();
   });
 
+  it("clears unsaved secrets when a dialog closes and isolates provider inputs", () => {
+    const { dependencies } = createDependencies();
+    renderApp("/ai", { aiDependencies: dependencies });
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure OpenAI" }));
+    const openAiInput = screen.getByLabelText("OpenAI API key");
+    fireEvent.change(openAiInput, { target: { value: "fake-openai-secret-for-test" } });
+    fireEvent.keyDown(screen.getByRole("dialog", { name: "Configure OpenAI" }), {
+      key: "Escape",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure OpenAI" }));
+    expect(screen.getByLabelText("OpenAI API key")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("OpenAI API key"), {
+      target: { value: "fake-openai-secret-for-test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Close dialog" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure Google Gemini" }));
+    expect(screen.getByLabelText("Gemini API key")).toHaveValue("");
+    expect(document.body.textContent).not.toContain("fake-openai-secret-for-test");
+  });
+
+  it("keeps provider credentials independent through replacement and removal", async () => {
+    const { dependencies, credentials } = createDependencies();
+    renderApp("/ai", { aiDependencies: dependencies });
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure OpenAI" }));
+    fireEvent.change(screen.getByLabelText("OpenAI API key"), {
+      target: { value: "fake-openai-secret-for-test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save key" }));
+    await screen.findByLabelText("API key saved and hidden");
+    expect(credentials.get("openai")).toBe("fake-openai-secret-for-test");
+    fireEvent.click(screen.getByRole("button", { name: "Replace" }));
+    fireEvent.change(screen.getByLabelText("OpenAI API key"), {
+      target: { value: "fake-openai-replacement-for-test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Replace key" }));
+    await screen.findByLabelText("API key saved and hidden");
+    expect(credentials.get("openai")).toBe("fake-openai-replacement-for-test");
+    expect(document.body.textContent).not.toContain("fake-openai-secret-for-test");
+    fireEvent.click(screen.getByRole("button", { name: "Close dialog" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "Configure Google Gemini" }));
+    fireEvent.change(screen.getByLabelText("Gemini API key"), {
+      target: { value: "fake-gemini-secret-for-test" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save key" }));
+    await screen.findByLabelText("API key saved and hidden");
+    expect(credentials.get("gemini")).toBe("fake-gemini-secret-for-test");
+    expect(credentials.get("openai")).toBe("fake-openai-replacement-for-test");
+
+    fireEvent.click(screen.getByRole("button", { name: "Remove saved API key" }));
+    await waitFor(() => expect(credentials.has("gemini")).toBe(false));
+    expect(credentials.get("openai")).toBe("fake-openai-replacement-for-test");
+    const serializedUiAndPersistence = [
+      document.body.textContent,
+      window.localStorage.getItem(AI_PROVIDER_PREFERENCES_KEY),
+    ].join(" ");
+    expect(serializedUiAndPersistence).not.toContain("fake-openai-secret-for-test");
+    expect(serializedUiAndPersistence).not.toContain("fake-openai-replacement-for-test");
+    expect(serializedUiAndPersistence).not.toContain("fake-gemini-secret-for-test");
+  });
+
+  it("restores only credential presence after an application restart", async () => {
+    const { dependencies, credentials } = createDependencies();
+    const firstRun = renderApp("/ai", { aiDependencies: dependencies });
+    fireEvent.click(screen.getByRole("button", { name: "Configure Anthropic Claude" }));
+    fireEvent.change(screen.getByLabelText("Anthropic API key"), {
+      target: { value: "fake-anthropic-restart-secret" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save key" }));
+    await screen.findByLabelText("API key saved and hidden");
+    expect(credentials.has("anthropic")).toBe(true);
+    firstRun.unmount();
+
+    renderApp("/ai", { aiDependencies: dependencies });
+    fireEvent.click(screen.getByRole("button", { name: "Configure Anthropic Claude" }));
+    expect(await screen.findByLabelText("API key saved and hidden")).toBeVisible();
+    expect(document.body.textContent).not.toContain("fake-anthropic-restart-secret");
+    expect(window.localStorage.getItem(AI_PROVIDER_PREFERENCES_KEY))
+      .not.toContain("fake-anthropic-restart-secret");
+  });
+
   it("truthfully disables credential entry outside the native runtime", () => {
     const { dependencies, saveCredential } = createDependencies({ native: false });
     renderApp("/ai", { aiDependencies: dependencies });

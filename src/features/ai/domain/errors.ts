@@ -95,7 +95,7 @@ export function createUnsupportedExecutionError(providerId: AIProviderId): AIErr
     code: "generation_not_enabled",
     providerId,
     category: "configuration_error",
-    message: "AI generation is not enabled in Phase 3.",
+    message: "AI generation is not enabled in Phase 4.",
     retryable: false,
     userAction: "Use connection testing only; request execution arrives with the Agent Engine.",
   };

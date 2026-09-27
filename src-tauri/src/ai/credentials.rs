@@ -152,6 +152,34 @@ mod tests {
     }
 
     #[test]
+    fn provider_entries_are_isolated_and_replacement_is_scoped() {
+        let store = MemoryCredentialStore::default();
+        store
+            .save(ProviderId::OpenAi, "fake-openai-secret-test-value")
+            .expect("OpenAI save failed");
+        store
+            .save(ProviderId::Gemini, "fake-gemini-secret-test-value")
+            .expect("Gemini save failed");
+        store
+            .save(ProviderId::OpenAi, "fake-openai-replacement-test-value")
+            .expect("OpenAI replacement failed");
+
+        assert_eq!(
+            store.get(ProviderId::OpenAi).expect("OpenAI read failed").as_str(),
+            "fake-openai-replacement-test-value"
+        );
+        assert_eq!(
+            store.get(ProviderId::Gemini).expect("Gemini read failed").as_str(),
+            "fake-gemini-secret-test-value"
+        );
+        store.delete(ProviderId::OpenAi).expect("OpenAI delete failed");
+        assert_eq!(
+            store.get(ProviderId::Gemini).expect("Gemini read failed").as_str(),
+            "fake-gemini-secret-test-value"
+        );
+    }
+
+    #[test]
     fn surfaces_store_failures_without_returning_a_secret() {
         let store = MemoryCredentialStore {
             fail: true,

@@ -21,6 +21,8 @@ describe("custom provider endpoint validation", () => {
     "http://models.example/v1",
     "http://127.evil.example.com/v1",
     "https://user:password@models.example/v1",
+    "https://user@models.example/v1",
+    "https://@models.example/v1",
     "https://models.example/v1?token=placeholder",
     "https://models.example/v1#fragment",
     "file:///tmp/models",

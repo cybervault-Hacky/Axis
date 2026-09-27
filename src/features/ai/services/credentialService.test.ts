@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { AIProviderId } from "../domain/types";
 import { TauriCredentialService } from "./credentialService";
 
 describe("Tauri credential service", () => {
@@ -26,6 +27,19 @@ describe("Tauri credential service", () => {
       providerId: "openai",
       credential: "obvious-test-placeholder-key",
     });
+  });
+
+  it("rejects malformed provider scopes before crossing the native boundary", async () => {
+    let invoked = false;
+    const service = new TauriCredentialService(<T>() => {
+      invoked = true;
+      return Promise.resolve(undefined as T);
+    }, () => true);
+
+    await expect(
+      service.hasCredential("../gemini" as unknown as AIProviderId),
+    ).rejects.toMatchObject({ code: "invalid_provider_scope" });
+    expect(invoked).toBe(false);
   });
 
   it("rejects browser use without invoking or falling back to web storage", async () => {

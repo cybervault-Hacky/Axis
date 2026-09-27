@@ -178,13 +178,16 @@ export function ProviderConfigurationDialog({
             </div>
           </div>
 
-          <CredentialField
-            label={provider.credentialLabel}
-            configured={runtime.credentialConfigured}
-            backendAvailable={credentialBackendAvailable}
-            onSave={(credential) => saveCredential(providerId, credential)}
-            onDelete={() => deleteCredential(providerId)}
-          />
+          {open && (
+            <CredentialField
+              key={providerId}
+              label={provider.credentialLabel}
+              configured={runtime.credentialConfigured}
+              backendAvailable={credentialBackendAvailable}
+              onSave={(credential) => saveCredential(providerId, credential)}
+              onDelete={() => deleteCredential(providerId)}
+            />
+          )}
         </div>
 
         <div

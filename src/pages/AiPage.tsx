@@ -113,7 +113,7 @@ export function AiPage() {
             <h2>Connect the AI layer behind AXIS.</h2>
             <p>
               Select a provider below, save your own API key through the native credential boundary,
-              and verify a model. AI generation remains disabled in Phase 3.
+              and verify a model. AI generation remains disabled in Phase 4.
             </p>
           </div>
         </Card>

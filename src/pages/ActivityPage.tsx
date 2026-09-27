@@ -49,7 +49,7 @@ export function ActivityPage() {
                 title={query ? "No activity matches your search" : "Nothing has run yet"}
                 description={
                   query
-                    ? "There are no execution records in Phase 3."
+                    ? "There are no execution records in Phase 4."
                     : "AXIS will show truthful execution history here once tasks can run. No sample records have been fabricated."
                 }
               />

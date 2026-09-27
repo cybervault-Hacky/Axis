@@ -1,16 +1,17 @@
 const REDACTED = "[REDACTED]";
-const sensitiveFieldPattern = /(?:api[-_ ]?key|authorization|bearer|access[-_ ]?token|refresh[-_ ]?token|password|secret|credential)/i;
+const sensitiveFieldPattern = /(?:api[-_ ]?key|x-goog-api-key|authorization|proxy-authorization|auth(?:entication)?|bearer|access[-_ ]?token|refresh[-_ ]?token|token|password|secret|credential|cookie|private[-_ ]?key)/i;
 
 const textPatterns: readonly [RegExp, string][] = [
+  // Explicitly named fields are safe to redact generically, including quoted JSON values.
   [
-    /(\bauthorization\s*[:=]\s*)["']?(?:[a-z][a-z0-9._~-]*\s+)?[^\s,;|"']+["']?/gi,
+    /(["']?(?:authorization|proxy-authorization|x-api-key|x-goog-api-key|api[-_ ]?key|access[-_ ]?token|refresh[-_ ]?token|token|password|secret|credential|cookie|private[-_ ]?key)["']?\s*[:=]\s*)(?:(?:bearer|basic)\s+)?(?:"[^"]*"|'[^']*'|[^\s,;|"'}`]+)/gi,
     `$1${REDACTED}`,
   ],
-  [/(\bbearer\s+)[a-z0-9._~+/=-]{8,}/gi, `$1${REDACTED}`],
-  [
-    /((?:x-api-key|api[-_ ]?key|access[-_ ]?token|refresh[-_ ]?token|password|secret|credential)\s*[:=]\s*)["']?[^\s,"'}]+["']?/gi,
-    `$1${REDACTED}`,
-  ],
+  // A standalone auth scheme still marks its following value as sensitive.
+  [/(\b(?:bearer|basic)\s+)[^\s,;|"'}`]+/gi, `$1${REDACTED}`],
+  // URLs must never retain user-info if an error or diagnostic includes an endpoint.
+  [/\b(https?:\/\/)\S*?@(?=[^/\s]+(?:[/?#]|$))/gi, `$1${REDACTED}@`],
+  // Retain provider-specific patterns as defense in depth for unlabeled messages.
   [/(?:sk|gsk)[-_][a-z0-9_-]{8,}/gi, REDACTED],
   [/(?:AIza)[a-z0-9_-]{12,}/gi, REDACTED],
 ];
@@ -29,10 +30,11 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
   seen.add(value);
 
   if (value instanceof Error) {
+    // Stack traces add little to user-facing diagnostics and can contain request details.
     return {
-      name: value.name,
+      name: redactSecretText(value.name),
       message: redactSecretText(value.message),
-      ...(value.stack ? { stack: redactSecretText(value.stack) } : {}),
+      ...(value.cause !== undefined ? { cause: redactValue(value.cause, seen) } : {}),
     };
   }
 
@@ -41,7 +43,7 @@ function redactValue(value: unknown, seen: WeakSet<object>): unknown {
 
   return Object.fromEntries(
     Object.entries(value).map(([key, nestedValue]) => [
-      key,
+      redactSecretText(key),
       sensitiveFieldPattern.test(key) ? REDACTED : redactValue(nestedValue, seen),
     ]),
   );

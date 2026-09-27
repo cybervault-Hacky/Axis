@@ -44,7 +44,7 @@ export function HomePage() {
     notify({
       tone: "information",
       title: "Command execution is not available yet",
-      message: "Your draft was not submitted. Phase 3 verifies providers but does not send prompts or run tools.",
+      message: "Your draft was not submitted. Phase 4 verifies providers but does not send prompts or run tools.",
     });
   };
 

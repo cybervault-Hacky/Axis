@@ -1,7 +1,7 @@
 use std::net::IpAddr;
 
 use reqwest::{StatusCode, Url};
-use serde_json::Value;
+use serde::Deserialize;
 use zeroize::Zeroizing;
 
 use super::types::{
@@ -69,7 +69,11 @@ fn custom_models_url(base_url: Option<&str>) -> Result<Url, &'static str> {
         return Err("The custom API base URL is longer than the supported limit.");
     }
     let parsed = Url::parse(base_url).map_err(|_| "The custom API base URL is invalid.")?;
-    if parsed.username() != "" || parsed.password().is_some() {
+    let authority = base_url
+        .split_once("://")
+        .map(|(_, remainder)| remainder.split(['/', '?', '#']).next().unwrap_or(""))
+        .unwrap_or("");
+    if parsed.username() != "" || parsed.password().is_some() || authority.contains('@') {
         return Err("Credentials are not allowed in the custom endpoint URL.");
     }
     if parsed.query().is_some() || parsed.fragment().is_some() {
@@ -79,8 +83,9 @@ fn custom_models_url(base_url: Option<&str>) -> Result<Url, &'static str> {
     let host = parsed
         .host_str()
         .ok_or("The custom API base URL requires a host.")?;
+    let normalized_host = host.trim_start_matches('[').trim_end_matches(']');
     let loopback = host.eq_ignore_ascii_case("localhost")
-        || host
+        || normalized_host
             .parse::<IpAddr>()
             .map(|address| address.is_loopback())
             .unwrap_or(false);
@@ -107,24 +112,34 @@ fn provider_models_url(input: &ConnectionProbeInput) -> Result<Url, &'static str
     }
 }
 
-fn model_ids(provider_id: ProviderId, value: &Value) -> Vec<&str> {
+#[derive(Debug, Deserialize)]
+struct ModelCatalog {
+    #[serde(default)]
+    data: Vec<ModelCatalogEntry>,
+    #[serde(default)]
+    models: Vec<ModelCatalogEntry>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ModelCatalogEntry {
+    id: Option<String>,
+    name: Option<String>,
+}
+
+fn model_ids(provider_id: ProviderId, catalog: &ModelCatalog) -> Vec<&str> {
     if provider_id == ProviderId::Gemini {
-        return value
-            .get("models")
-            .and_then(Value::as_array)
-            .into_iter()
-            .flatten()
-            .filter_map(|model| model.get("name").and_then(Value::as_str))
+        return catalog
+            .models
+            .iter()
+            .filter_map(|model| model.name.as_deref())
             .map(|name| name.strip_prefix("models/").unwrap_or(name))
             .collect();
     }
 
-    value
-        .get("data")
-        .and_then(Value::as_array)
-        .into_iter()
-        .flatten()
-        .filter_map(|model| model.get("id").and_then(Value::as_str))
+    catalog
+        .data
+        .iter()
+        .filter_map(|model| model.id.as_deref())
         .collect()
 }
 
@@ -226,7 +241,7 @@ pub async fn probe_connection(
         );
     }
 
-    let mut body = Vec::new();
+    let mut body = Zeroizing::new(Vec::new());
     loop {
         match response.chunk().await {
             Ok(Some(chunk)) if chunk.len() <= MAX_MODEL_RESPONSE_BYTES - body.len() => {
@@ -246,7 +261,7 @@ pub async fn probe_connection(
             Ok(None) => break,
         }
     }
-    let catalog: Value = match serde_json::from_slice(&body) {
+    let catalog: ModelCatalog = match serde_json::from_slice(body.as_slice()) {
         Ok(value) => value,
         Err(_) => {
             return ConnectionTestResult::failed(
@@ -305,9 +320,9 @@ mod tests {
 
     #[test]
     fn extracts_provider_model_catalogs() {
-        let openai: Value = serde_json::from_str(r#"{"data":[{"id":"model-one"}]}"#)
+        let openai: ModelCatalog = serde_json::from_str(r#"{"data":[{"id":"model-one"}]}"#)
             .expect("valid OpenAI catalog");
-        let gemini: Value = serde_json::from_str(
+        let gemini: ModelCatalog = serde_json::from_str(
             r#"{"models":[{"name":"models/model-two"}]}"#,
         )
         .expect("valid Gemini catalog");
@@ -319,8 +334,14 @@ mod tests {
     fn custom_endpoints_require_https_except_for_loopback() {
         assert!(custom_models_url(Some("https://provider.example/v1")).is_ok());
         assert!(custom_models_url(Some("http://localhost:11434/v1")).is_ok());
+        assert!(custom_models_url(Some("http://[::1]:8080/v1")).is_ok());
         assert!(custom_models_url(Some("http://192.0.2.10/v1")).is_err());
         assert!(custom_models_url(Some("https://user:pass@provider.example/v1")).is_err());
+        assert!(custom_models_url(Some("https://user@provider.example/v1")).is_err());
+        assert!(custom_models_url(Some("https://@provider.example/v1")).is_err());
+        assert!(custom_models_url(Some("https://provider.example/v1?token=fake")).is_err());
+        assert!(custom_models_url(Some("https://provider.example/v1#fragment")).is_err());
+        assert!(custom_models_url(Some("not a URL")).is_err());
         let oversized = format!("https://provider.example/{}", "a".repeat(2_048));
         assert!(custom_models_url(Some(&oversized)).is_err());
     }

@@ -110,7 +110,7 @@ export function PointsPage() {
       <div className="points-notice">
         <Info size={16} aria-hidden="true" />
         <p>
-          <strong>Points and billing are not implemented in Phase 3.</strong> No balance is calculated and no points can be spent or deducted.
+          <strong>Points and billing are not implemented in Phase 4.</strong> No balance is calculated and no points can be spent or deducted.
         </p>
       </div>
     </section>

@@ -1,8 +1,10 @@
 import { invoke } from "@tauri-apps/api/core";
 import type { AIProviderId } from "../domain/types";
+import { isAIProviderId } from "../providers/registry";
 
 export type CredentialServiceErrorCode =
   | "native_unavailable"
+  | "invalid_provider_scope"
   | "invalid_credential"
   | "credential_store_unavailable"
   | "credential_operation_failed";
@@ -36,6 +38,15 @@ function unavailableError(): CredentialServiceError {
     "native_unavailable",
     "Secure credential storage is available only in the native AXIS desktop runtime.",
   );
+}
+
+function assertProviderScope(providerId: AIProviderId): void {
+  if (!isAIProviderId(providerId)) {
+    throw new CredentialServiceError(
+      "invalid_provider_scope",
+      "The provider credential scope is invalid.",
+    );
+  }
 }
 
 function normalizeCredentialError(error: unknown): CredentialServiceError {
@@ -76,6 +87,7 @@ export class TauriCredentialService implements CredentialService {
   }
 
   async saveCredential(providerId: AIProviderId, credential: string): Promise<void> {
+    assertProviderScope(providerId);
     if (!this.isNativeAvailable()) throw unavailableError();
     try {
       await this.#invoke<void>("save_ai_credential", { providerId, credential });
@@ -85,6 +97,7 @@ export class TauriCredentialService implements CredentialService {
   }
 
   async hasCredential(providerId: AIProviderId): Promise<boolean> {
+    assertProviderScope(providerId);
     if (!this.isNativeAvailable()) throw unavailableError();
     try {
       return await this.#invoke<boolean>("has_ai_credential", { providerId });
@@ -94,6 +107,7 @@ export class TauriCredentialService implements CredentialService {
   }
 
   async deleteCredential(providerId: AIProviderId): Promise<void> {
+    assertProviderScope(providerId);
     if (!this.isNativeAvailable()) throw unavailableError();
     try {
       await this.#invoke<void>("delete_ai_credential", { providerId });

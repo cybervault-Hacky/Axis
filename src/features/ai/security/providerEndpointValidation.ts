@@ -25,7 +25,8 @@ export function validateProviderBaseUrl(value: string): ProviderEndpointValidati
     return { valid: false, message: "Enter a complete API base URL." };
   }
 
-  if (endpoint.username || endpoint.password) {
+  const authority = candidate.slice(candidate.indexOf("://") + 3).split(/[/?#]/, 1)[0] ?? "";
+  if (endpoint.username || endpoint.password || authority.includes("@")) {
     return { valid: false, message: "Credentials are not allowed in the endpoint URL." };
   }
   if (endpoint.search || endpoint.hash) {

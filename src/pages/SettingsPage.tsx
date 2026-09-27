@@ -221,7 +221,7 @@ function AIProviderSettings() {
         Manage AI providers <ChevronRight size={15} aria-hidden="true" />
       </Link>
       <p className="settings-context-note">
-        Provider connection testing is active in Phase 3. Prompt generation and tool execution remain disabled.
+        Provider connection testing is active in Phase 4. Prompt generation and tool execution remain disabled.
       </p>
     </SettingsPanel>
   );
@@ -329,7 +329,7 @@ function AboutSettings() {
           <Badge>{APP_CONFIG.phase}</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">Provider configuration and real connection checks are included in Phase 3. AI generation, app integrations, billing, and workflow runs remain reserved for future phases.</p>
+      <p className="settings-context-note">Provider configuration and real connection checks are included in Phase 4. AI generation, app integrations, billing, and workflow runs remain reserved for future phases.</p>
     </SettingsPanel>
   );
 }

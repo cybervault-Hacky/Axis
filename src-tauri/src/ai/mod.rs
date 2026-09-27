@@ -20,7 +20,7 @@ pub struct AiRuntime {
 impl AiRuntime {
     pub fn new() -> Result<Self, reqwest::Error> {
         let client = reqwest::Client::builder()
-            .user_agent("AXIS/0.3.0")
+            .user_agent("AXIS/0.4.0")
             .timeout(Duration::from_secs(15))
             .redirect(reqwest::redirect::Policy::none())
             .build()?;
