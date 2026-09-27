@@ -1,135 +1,184 @@
-import { Bot, Check, ChevronRight, Cpu, KeyRound, LockKeyhole, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Bot,
+  KeyRound,
+  LockKeyhole,
+  RefreshCw,
+  ShieldCheck,
+  SlidersHorizontal,
+} from "lucide-react";
+import { useState } from "react";
 import { Badge } from "../components/ui/Badge";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
-import { StatusIndicator } from "../components/ui/StatusIndicator";
-
-const providers = [
-  { name: "OpenAI", monogram: "O", description: "GPT model family" },
-  { name: "Anthropic", monogram: "A", description: "Claude model family" },
-  { name: "Google", monogram: "G", description: "Gemini model family" },
-  { name: "Compatible API", monogram: "C", description: "OpenAI-compatible endpoint" },
-] as const;
-
-const setupSteps = [
-  { label: "Select a provider", detail: "Choose the intelligence behind AXIS." },
-  { label: "Add credentials", detail: "Secure credential storage arrives with provider support." },
-  { label: "Choose a model", detail: "Set a default model for planning and execution." },
-] as const;
+import { ProviderCard } from "../features/ai/components/ProviderCard";
+import { ProviderConfigurationDialog } from "../features/ai/components/ProviderConfigurationDialog";
+import { ProviderStatus } from "../features/ai/components/ProviderStatus";
+import type { AIProviderId } from "../features/ai/domain/types";
+import { aiProviderRegistry } from "../features/ai/providers/registry";
+import { useAIProviders } from "../features/ai/state/AIProviderProvider";
+import { useNotifications } from "../features/notifications/NotificationProvider";
 
 export function AiPage() {
+  const {
+    preferences,
+    providerStates,
+    selectedProvider,
+    selectedConfig,
+    selectedRuntime,
+    credentialBackendAvailable,
+    selectProvider,
+  } = useAIProviders();
+  const { notify } = useNotifications();
+  const [configurationProviderId, setConfigurationProviderId] =
+    useState<AIProviderId | null>(null);
+
+  const selectedModel = selectedProvider?.models.find(
+    (model) => model.id === selectedConfig?.selectedModelId,
+  );
+  const selectedModelLabel = selectedProvider?.customModel
+    ? selectedConfig?.selectedModelId || "Model not selected"
+    : selectedModel?.displayName ?? "Model not selected";
+
+  const configureProvider = (providerId: AIProviderId) => {
+    const changingProvider = preferences.selectedProviderId !== providerId;
+    selectProvider(providerId);
+    setConfigurationProviderId(providerId);
+    if (changingProvider) {
+      notify({
+        tone: "information",
+        title: `${aiProviderRegistry.get(providerId).shortName} selected`,
+        message: "Add a key and test the connection when you are ready.",
+      });
+    }
+  };
+
   return (
-    <section className="page page--ai">
+    <section className="page page--ai page--ai-providers">
       <PageHeader
-        eyebrow="Intelligence"
-        title="Your AI, under your control."
-        description="AXIS is designed to work with the provider and model you choose. No provider is connected yet."
-        actions={<StatusIndicator label="Not connected" tone="idle" />}
+        eyebrow="AI providers"
+        title="Your AI, your choice."
+        description="Choose the provider that powers AXIS. Your provider account and model remain independent from AXIS."
+        actions={
+          selectedRuntime
+            ? <ProviderStatus status={selectedRuntime.connectionStatus} />
+            : <Badge>No provider selected</Badge>
+        }
       />
 
-      <div className="ai-overview-grid">
-        <Card className="ai-connection-card" tone="raised">
-          <div className="ai-connection-card__visual" aria-hidden="true">
-            <div className="ai-orbit ai-orbit--outer" />
-            <div className="ai-orbit ai-orbit--inner" />
-            <div className="ai-core">
-              <Bot size={25} strokeWidth={1.55} />
-            </div>
-          </div>
-          <div className="ai-connection-card__copy">
-            <Badge tone="warning">Provider required</Badge>
-            <h2>Connect an AI provider to start using AXIS.</h2>
-            <p>
-              Provider authentication and model requests are intentionally not active in this phase.
-              This screen is ready for the real connection flow.
-            </p>
-          </div>
-          <div className="ai-connection-card__facts">
+      {selectedProvider && selectedConfig && selectedRuntime ? (
+        <Card className="selected-provider-hero" tone="raised">
+          <div className="selected-provider-hero__identity">
+            <span className="selected-provider-hero__mark" aria-hidden="true">
+              {selectedProvider.shortName.slice(0, 1)}
+            </span>
             <div>
-              <span>Provider</span>
-              <strong>Not selected</strong>
+              <p className="section-heading__eyebrow">Selected AI</p>
+              <h2>{selectedProvider.displayName}</h2>
+              <p>{selectedProvider.description}</p>
             </div>
+          </div>
+          <div className="selected-provider-hero__details">
             <div>
               <span>Model</span>
-              <strong>Unavailable</strong>
+              <strong>{selectedModelLabel}</strong>
             </div>
             <div>
-              <span>Credentials</span>
-              <strong>Not stored</strong>
+              <span>Credential</span>
+              <strong>
+                {selectedRuntime.credentialConfigured ? "Native store" : "Not configured"}
+              </strong>
             </div>
-          </div>
-        </Card>
-
-        <Card className="provider-steps-card">
-          <div className="section-heading section-heading--compact">
             <div>
-              <p className="section-heading__eyebrow">Connection flow</p>
-              <h2>Designed for a clear setup</h2>
+              <span>Connection</span>
+              <ProviderStatus status={selectedRuntime.connectionStatus} />
             </div>
-            <Sparkles size={18} aria-hidden="true" />
           </div>
-          <ol className="provider-steps">
-            {setupSteps.map((step, index) => (
-              <li key={step.label}>
-                <span className="provider-step__index">{index + 1}</span>
-                <span>
-                  <strong>{step.label}</strong>
-                  <span>{step.detail}</span>
-                </span>
-              </li>
-            ))}
-          </ol>
-          <div className="provider-steps-card__note">
-            <LockKeyhole size={15} aria-hidden="true" />
-            <span>No API keys are requested or stored in Phase 2.</span>
-          </div>
+          <Button
+            variant="primary"
+            onClick={() => setConfigurationProviderId(selectedProvider.id)}
+            trailingIcon={<ArrowRight size={15} aria-hidden="true" />}
+          >
+            Configure provider
+          </Button>
         </Card>
-      </div>
-
-      <div className="content-section">
-        <div className="section-heading">
+      ) : (
+        <Card className="provider-empty-hero" tone="raised">
+          <span className="provider-empty-hero__icon" aria-hidden="true">
+            <Bot size={25} strokeWidth={1.55} />
+          </span>
           <div>
-            <p className="section-heading__eyebrow">Providers</p>
-            <h2>Built for choice</h2>
-            <p className="section-heading__description">
-              These provider entries show the planned management structure, not active connections.
+            <Badge tone="warning">Provider required</Badge>
+            <h2>Connect the AI layer behind AXIS.</h2>
+            <p>
+              Select a provider below, save your own API key through the native credential boundary,
+              and verify a model. AI generation remains disabled in Phase 3.
             </p>
           </div>
-          <Badge>All coming later</Badge>
+        </Card>
+      )}
+
+      {!credentialBackendAvailable && (
+        <div className="native-boundary-notice" role="status">
+          <LockKeyhole size={16} aria-hidden="true" />
+          <div>
+            <strong>Native credential storage is unavailable in this preview.</strong>
+            <span>No browser-storage fallback is used. Open AXIS through Tauri to configure keys.</span>
+          </div>
+        </div>
+      )}
+
+      <div className="content-section provider-management-section">
+        <div className="section-heading">
+          <div>
+            <p className="section-heading__eyebrow">Provider registry</p>
+            <h2>Choose what powers AXIS</h2>
+            <p className="section-heading__description">
+              Model catalogs are centralized and connection tests verify actual account access.
+            </p>
+          </div>
+          <Badge>{aiProviderRegistry.providers.length} providers</Badge>
         </div>
 
-        <div className="provider-grid">
-          {providers.map((provider) => (
-            <Card className="provider-card" tone="subtle" key={provider.name}>
-              <span className="provider-card__monogram" aria-hidden="true">
-                {provider.monogram}
-              </span>
-              <div className="provider-card__copy">
-                <strong>{provider.name}</strong>
-                <span>{provider.description}</span>
-              </div>
-              <Badge>Planned</Badge>
-            </Card>
+        <div className="provider-choice-grid">
+          {aiProviderRegistry.providers.map((provider) => (
+            <ProviderCard
+              key={provider.id}
+              provider={provider}
+              config={preferences.configs[provider.id]}
+              runtime={providerStates[provider.id]}
+              selected={preferences.selectedProviderId === provider.id}
+              onConfigure={() => configureProvider(provider.id)}
+            />
           ))}
         </div>
       </div>
 
-      <Card className="ai-architecture-strip" tone="subtle">
-        <div className="architecture-item">
-          <Cpu size={17} aria-hidden="true" />
-          <span><strong>Provider</strong><small>Your selected AI service</small></span>
+      <Card className="provider-foundation-strip" tone="subtle">
+        <div>
+          <span><KeyRound size={17} aria-hidden="true" /></span>
+          <p><strong>Bring your own key</strong><small>Keys stay behind a native credential API.</small></p>
         </div>
-        <ChevronRight size={15} className="architecture-arrow" aria-hidden="true" />
-        <div className="architecture-item">
-          <KeyRound size={17} aria-hidden="true" />
-          <span><strong>Credential vault</strong><small>Prepared for secure native storage</small></span>
+        <div>
+          <span><RefreshCw size={17} aria-hidden="true" /></span>
+          <p><strong>Real connection checks</strong><small>No connection is marked successful without a provider response.</small></p>
         </div>
-        <ChevronRight size={15} className="architecture-arrow" aria-hidden="true" />
-        <div className="architecture-item">
-          <Check size={17} aria-hidden="true" />
-          <span><strong>Model ready</strong><small>Available after a verified connection</small></span>
+        <div>
+          <span><SlidersHorizontal size={17} aria-hidden="true" /></span>
+          <p><strong>Normalized adapters</strong><small>The future Agent Engine depends on AXIS, not one AI vendor.</small></p>
+        </div>
+        <div>
+          <span><ShieldCheck size={17} aria-hidden="true" /></span>
+          <p><strong>Execution still off</strong><small>No prompts or tool actions are sent in this phase.</small></p>
         </div>
       </Card>
+
+      <ProviderConfigurationDialog
+        providerId={configurationProviderId}
+        open={configurationProviderId !== null}
+        onClose={() => setConfigurationProviderId(null)}
+      />
     </section>
   );
 }

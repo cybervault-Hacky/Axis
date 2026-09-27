@@ -15,14 +15,16 @@ import {
   ShieldCheck,
   Sun,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import { Link } from "react-router-dom";
+import type { ReactNode } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { APP_CONFIG } from "../app/config";
 import { AxisMark } from "../components/icons/AxisMark";
 import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
 import { StatusIndicator } from "../components/ui/StatusIndicator";
+import { ProviderStatus } from "../features/ai/components/ProviderStatus";
+import { useAIProviders } from "../features/ai/state/AIProviderProvider";
 import { useNotifications } from "../features/notifications/NotificationProvider";
 import { useUIPreferences } from "../features/preferences/UIPreferencesProvider";
 import { useTheme } from "../features/theme/ThemeProvider";
@@ -32,7 +34,7 @@ import { classNames } from "../lib/classNames";
 const settingsSections = [
   { id: "general", label: "General", icon: Settings2 },
   { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "ai", label: "AI", icon: Bot },
+  { id: "ai", label: "AI Providers", icon: Bot },
   { id: "apps", label: "Connected Apps", icon: Boxes },
   { id: "permissions", label: "Permissions", icon: ShieldCheck },
   { id: "security", label: "Security", icon: LockKeyhole },
@@ -41,6 +43,10 @@ const settingsSections = [
 ] as const;
 
 type SettingsSectionId = (typeof settingsSections)[number]["id"];
+
+function isSettingsSection(value: string | null): value is SettingsSectionId {
+  return settingsSections.some((section) => section.id === value);
+}
 
 const themes: Array<{
   id: ThemePreference;
@@ -168,32 +174,75 @@ function AppearanceSettings() {
   );
 }
 
-function LinkedSettings({ type }: { type: "ai" | "apps" }) {
-  const isAi = type === "ai";
+function AIProviderSettings() {
+  const {
+    selectedProvider,
+    selectedConfig,
+    selectedRuntime,
+    credentialBackendAvailable,
+  } = useAIProviders();
+  const selectedModel = selectedProvider?.models.find(
+    (model) => model.id === selectedConfig?.selectedModelId,
+  );
+  const modelLabel = selectedProvider?.customModel
+    ? selectedConfig?.selectedModelId
+    : selectedModel?.displayName;
+
   return (
     <SettingsPanel
-      title={isAi ? "AI" : "Connected Apps"}
-      description={
-        isAi
-          ? "Provider settings will live in the dedicated AI workspace."
-          : "Connector settings will be managed alongside supported applications."
-      }
+      title="AI Providers"
+      description="Choose and verify the provider that will power the future AXIS Agent Engine."
+    >
+      <Card className="settings-card">
+        <div className="setting-row">
+          <span><strong>Selected AI</strong><small>The provider currently assigned to AXIS</small></span>
+          <span className="setting-row__value">
+            {selectedProvider?.displayName ?? "Not selected"}
+          </span>
+        </div>
+        <div className="setting-row">
+          <span><strong>Model</strong><small>Safe preference stored on this device</small></span>
+          <span className="setting-row__value">{modelLabel || "Not selected"}</span>
+        </div>
+        <div className="setting-row">
+          <span><strong>Connection</strong><small>Verified only after a real provider response</small></span>
+          {selectedRuntime
+            ? <ProviderStatus status={selectedRuntime.connectionStatus} />
+            : <Badge>Not configured</Badge>}
+        </div>
+        <div className="setting-row">
+          <span><strong>Credential boundary</strong><small>No key is stored in browser storage</small></span>
+          <Badge tone={credentialBackendAvailable ? "positive" : "warning"}>
+            {credentialBackendAvailable ? "Native store ready" : "Desktop required"}
+          </Badge>
+        </div>
+      </Card>
+      <Link to="/ai" className="settings-provider-action">
+        Manage AI providers <ChevronRight size={15} aria-hidden="true" />
+      </Link>
+      <p className="settings-context-note">
+        Provider connection testing is active in Phase 3. Prompt generation and tool execution remain disabled.
+      </p>
+    </SettingsPanel>
+  );
+}
+
+function ConnectedAppsSettings() {
+  return (
+    <SettingsPanel
+      title="Connected Apps"
+      description="Connector settings will be managed alongside supported applications."
     >
       <Card className="settings-link-card">
         <span className="settings-link-card__icon" aria-hidden="true">
-          {isAi ? <Bot size={21} /> : <Boxes size={21} />}
+          <Boxes size={21} />
         </span>
         <span className="settings-link-card__copy">
-          <strong>{isAi ? "No provider connected" : "No applications connected"}</strong>
-          <small>
-            {isAi
-              ? "Provider authentication is planned for a later phase."
-              : "Application connectors are planned for later phases."}
-          </small>
+          <strong>No applications connected</strong>
+          <small>Application connectors are planned for later phases.</small>
         </span>
-        <Link to={isAi ? "/ai" : "/apps"} className="settings-link-card__link">
-          Open {isAi ? "AI" : "Apps"}
-          <ChevronRight size={15} aria-hidden="true" />
+        <Link to="/apps" className="settings-link-card__link">
+          Open Apps <ChevronRight size={15} aria-hidden="true" />
         </Link>
       </Card>
     </SettingsPanel>
@@ -216,22 +265,37 @@ function PermissionsSettings() {
 }
 
 function SecuritySettings() {
+  const { providerStates, credentialBackendAvailable } = useAIProviders();
+  const configuredCredentialCount = Object.values(providerStates).filter(
+    (provider) => provider.credentialConfigured,
+  ).length;
+
   return (
     <SettingsPanel
       title="Security"
-      description="Security controls will be introduced with credentials, connectors, and execution."
+      description="Provider keys remain behind a narrow native credential boundary."
     >
       <Card className="settings-card">
         <div className="setting-row">
-          <span><strong>Provider credentials</strong><small>No API keys have been requested</small></span>
-          <Badge tone="positive">None stored</Badge>
+          <span><strong>Native credential store</strong><small>OS-backed storage; never localStorage or sessionStorage</small></span>
+          <Badge tone={credentialBackendAvailable ? "positive" : "warning"}>
+            {credentialBackendAvailable ? "Available" : "Unavailable"}
+          </Badge>
         </div>
         <div className="setting-row">
-          <span><strong>External access</strong><small>No application connectors are active</small></span>
+          <span><strong>Provider credentials</strong><small>Only presence metadata reaches the interface</small></span>
+          <span className="setting-row__value">
+            {configuredCredentialCount} configured
+          </span>
+        </div>
+        <div className="setting-row">
+          <span><strong>External app access</strong><small>No application connectors or control bridges are active</small></span>
           <Badge tone="positive">Inactive</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">No simulated vault, credential validation, or security claims are included in Phase 2.</p>
+      <p className="settings-context-note">
+        AXIS does not expose a command that returns saved keys to the webview. Linux storage also requires an available desktop Secret Service.
+      </p>
     </SettingsPanel>
   );
 }
@@ -265,7 +329,7 @@ function AboutSettings() {
           <Badge>{APP_CONFIG.phase}</Badge>
         </div>
       </Card>
-      <p className="settings-context-note">AI execution, app integrations, billing, and workflow runs remain reserved for future phases.</p>
+      <p className="settings-context-note">Provider configuration and real connection checks are included in Phase 3. AI generation, app integrations, billing, and workflow runs remain reserved for future phases.</p>
     </SettingsPanel>
   );
 }
@@ -273,8 +337,8 @@ function AboutSettings() {
 function SettingsContent({ section }: { section: SettingsSectionId }) {
   if (section === "general") return <GeneralSettings />;
   if (section === "appearance") return <AppearanceSettings />;
-  if (section === "ai") return <LinkedSettings type="ai" />;
-  if (section === "apps") return <LinkedSettings type="apps" />;
+  if (section === "ai") return <AIProviderSettings />;
+  if (section === "apps") return <ConnectedAppsSettings />;
   if (section === "permissions") return <PermissionsSettings />;
   if (section === "security") return <SecuritySettings />;
   if (section === "notifications") return <NotificationSettings />;
@@ -282,7 +346,11 @@ function SettingsContent({ section }: { section: SettingsSectionId }) {
 }
 
 export function SettingsPage() {
-  const [section, setSection] = useState<SettingsSectionId>("general");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedSection = searchParams.get("section");
+  const section: SettingsSectionId = isSettingsSection(requestedSection)
+    ? requestedSection
+    : "general";
 
   return (
     <section className="page page--settings">
@@ -300,7 +368,12 @@ export function SettingsPage() {
               type="button"
               className={classNames("settings-nav__item", section === item.id && "settings-nav__item--active")}
               aria-current={section === item.id ? "page" : undefined}
-              onClick={() => setSection(item.id)}
+              onClick={() => {
+                void setSearchParams(
+                  item.id === "general" ? {} : { section: item.id },
+                  { replace: true },
+                );
+              }}
             >
               <item.icon size={16} strokeWidth={1.8} aria-hidden="true" />
               <span>{item.label}</span>

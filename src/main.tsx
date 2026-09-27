@@ -8,6 +8,7 @@ import "./styles/reset.css";
 import "./styles/app.css";
 import "./styles/pages.css";
 import "./styles/interactions.css";
+import "./styles/ai-providers.css";
 
 const rootElement = document.getElementById("root");
 

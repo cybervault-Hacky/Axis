@@ -12,6 +12,8 @@ import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { PageHeader } from "../components/ui/PageHeader";
 import { StatusIndicator } from "../components/ui/StatusIndicator";
+import { connectionStatusPresentation } from "../features/ai/components/providerStatusPresentation";
+import { useAIProviders } from "../features/ai/state/AIProviderProvider";
 import { CommandComposer } from "../features/command/CommandComposer";
 import { useCommand } from "../features/command/CommandProvider";
 import { useNotifications } from "../features/notifications/NotificationProvider";
@@ -21,7 +23,17 @@ export function HomePage() {
   const commandInputRef = useRef<HTMLTextAreaElement>(null);
   const { draft, setDraft, focusRequest } = useCommand();
   const { notify } = useNotifications();
+  const { selectedProvider, selectedConfig, selectedRuntime } = useAIProviders();
   const systemStatus = useSystemStatus();
+  const providerStatus = selectedRuntime
+    ? connectionStatusPresentation[selectedRuntime.connectionStatus]
+    : null;
+  const selectedModel = selectedProvider?.models.find(
+    (model) => model.id === selectedConfig?.selectedModelId,
+  );
+  const selectedModelLabel = selectedProvider?.customModel
+    ? selectedConfig?.selectedModelId
+    : selectedModel?.displayName;
 
   useEffect(() => {
     if (focusRequest === 0) return;
@@ -32,7 +44,7 @@ export function HomePage() {
     notify({
       tone: "information",
       title: "Command execution is not available yet",
-      message: "Your draft was not submitted. AI execution arrives in a later phase.",
+      message: "Your draft was not submitted. Phase 3 verifies providers but does not send prompts or run tools.",
     });
   };
 
@@ -50,9 +62,23 @@ export function HomePage() {
         onValueChange={setDraft}
         onUnavailableAttempt={explainUnavailableExecution}
         status="unavailable"
+        providerContext={
+          selectedProvider && providerStatus ? (
+            <span className="composer-provider-status">
+              <span className={`composer-provider-status__dot composer-provider-status__dot--${providerStatus.tone}`} aria-hidden="true" />
+              <span>{selectedProvider.shortName}</span>
+              <span aria-hidden="true">·</span>
+              <strong>{providerStatus.label}</strong>
+            </span>
+          ) : (
+            <Badge tone="warning">No provider connected</Badge>
+          )
+        }
         action={
           <Link className="button button--secondary button--medium" to="/ai">
-            <span className="button__label">Review AI setup</span>
+            <span className="button__label">
+              {selectedProvider ? "Manage AI" : "Connect AI"}
+            </span>
             <span className="button__icon"><ArrowRight size={14} aria-hidden="true" /></span>
           </Link>
         }
@@ -92,8 +118,16 @@ export function HomePage() {
           <div className="home-snapshot__rows">
             <Link to="/ai" className="home-snapshot__row">
               <span><Bot size={15} aria-hidden="true" />AI provider</span>
-              <Badge>Not configured</Badge>
+              <Badge tone={providerStatus?.tone ?? "neutral"}>
+                {selectedProvider ? selectedProvider.shortName : "Not selected"}
+              </Badge>
             </Link>
+            {selectedProvider && (
+              <Link to="/ai" className="home-snapshot__row">
+                <span><Bot size={15} aria-hidden="true" />Model</span>
+                <Badge>{selectedModelLabel || "Not selected"}</Badge>
+              </Link>
+            )}
             <Link to="/apps" className="home-snapshot__row">
               <span><Boxes size={15} aria-hidden="true" />Connected apps</span>
               <Badge>0 connected</Badge>

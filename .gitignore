@@ -13,6 +13,13 @@ src-tauri/target/
 .env.local
 .env.*.local
 !.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+credentials*.json
+secrets*.json
+*.local.json
 
 # Editors and operating systems
 .DS_Store

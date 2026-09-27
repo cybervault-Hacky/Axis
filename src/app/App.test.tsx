@@ -4,7 +4,7 @@ import { renderApp } from "../test/renderApp";
 
 const routes = [
   ["/", "What would you like to accomplish?"],
-  ["/ai", "Your AI, under your control."],
+  ["/ai", "Your AI, your choice."],
   ["/apps", "Bring every tool into focus."],
   ["/projects", "A home for every outcome."],
   ["/workflows", "Complex work, one clear flow."],

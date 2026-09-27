@@ -1,6 +1,7 @@
 import { X } from "lucide-react";
 import { useId, useRef, type ReactNode } from "react";
 import { useNativeDialog } from "../overlays/useNativeDialog";
+import { classNames } from "../../lib/classNames";
 import { Button } from "./Button";
 
 interface DialogProps {
@@ -11,6 +12,7 @@ interface DialogProps {
   children?: ReactNode;
   footer?: ReactNode;
   closeOnBackdrop?: boolean;
+  className?: string;
 }
 
 export function Dialog({
@@ -21,6 +23,7 @@ export function Dialog({
   children,
   footer,
   closeOnBackdrop = true,
+  className,
 }: DialogProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useNativeDialog<HTMLDialogElement>({
@@ -33,7 +36,7 @@ export function Dialog({
   return (
     <dialog
       ref={dialogRef}
-      className="dialog"
+      className={classNames("dialog", className)}
       aria-labelledby={titleId}
       aria-describedby={description ? descriptionId : undefined}
       onCancel={(event) => {

@@ -1,6 +1,6 @@
 [package]
 name = "axis"
-version = "0.2.0"
+version = "0.3.0"
 description = "AXIS desktop AI control platform"
 authors = ["AXIS"]
 edition = "2021"
@@ -15,6 +15,20 @@ tauri-build = { version = "2", features = [] }
 
 [dependencies]
 tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+keyring = { version = "3.6.3", default-features = false }
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "rustls"] }
+zeroize = "1.8"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+keyring = { version = "3.6.3", default-features = false, features = ["apple-native"] }
+
+[target.'cfg(target_os = "windows")'.dependencies]
+keyring = { version = "3.6.3", default-features = false, features = ["windows-native"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+keyring = { version = "3.6.3", default-features = false, features = ["linux-native-sync-persistent", "crypto-rust"] }
 
 [profile.release]
 panic = "abort"

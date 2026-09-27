@@ -87,7 +87,7 @@ export function AppsPage() {
       <div className="apps-foundation-note">
         <Boxes size={16} aria-hidden="true" />
         <p>
-          <strong>Connector foundation only.</strong> No apps are connected and no external app control is simulated in Phase 2.
+          <strong>Connector foundation only.</strong> No apps are connected and no external app control is simulated in Phase 3.
         </p>
       </div>
     </section>

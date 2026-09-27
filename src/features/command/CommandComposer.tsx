@@ -21,6 +21,7 @@ interface CommandComposerProps
   onUnavailableAttempt?: () => void;
   status?: CommandComposerStatus;
   action?: ReactNode;
+  providerContext?: ReactNode;
 }
 
 export const CommandComposer = forwardRef<HTMLTextAreaElement, CommandComposerProps>(
@@ -32,6 +33,7 @@ export const CommandComposer = forwardRef<HTMLTextAreaElement, CommandComposerPr
       onUnavailableAttempt,
       status = "idle",
       action,
+      providerContext,
       className,
       placeholder = "Tell AXIS what you need...",
       ...props
@@ -80,7 +82,7 @@ export const CommandComposer = forwardRef<HTMLTextAreaElement, CommandComposerPr
               <small>Describe an outcome in your own words</small>
             </span>
           </div>
-          <Badge tone="warning">Provider required</Badge>
+          {providerContext ?? <Badge tone="warning">Provider required</Badge>}
         </div>
 
         <div className="global-command__input-wrap">

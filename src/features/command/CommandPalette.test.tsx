@@ -31,7 +31,7 @@ describe("command palette", () => {
     fireEvent.keyDown(search, { key: "Enter" });
 
     expect(
-      await screen.findByRole("heading", { name: "Your AI, under your control." }),
+      await screen.findByRole("heading", { name: "Your AI, your choice." }),
     ).toBeInTheDocument();
   });
 

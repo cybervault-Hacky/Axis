@@ -1,4 +1,4 @@
-/* Phase 2 shell evolution */
+/* Shared shell interactions */
 .app-frame {
   --sidebar-width: var(--sidebar-expanded-width);
 }
