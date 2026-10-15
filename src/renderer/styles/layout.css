@@ -1,0 +1,389 @@
+.axis-app {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--axis-sidebar-width) 1fr;
+  height: 100vh;
+  width: 100vw;
+  background: var(--axis-bg-app);
+  transition: grid-template-columns var(--axis-duration-base) var(--axis-ease-standard);
+}
+
+/*
+ * Phase 16: the window-wide counterpart to History's own `.axis-view__inner
+ * --drop-active` highlight (Phase 13) — shown while a file is being dragged
+ * over any part of the app other than History's own drop zone, which keeps
+ * its own highlight. Deliberately an *inset* box-shadow rather than an
+ * outline: `.axis-app` is exactly `100vw` × `100vh`, so an
+ * outline-offset (as History's inner zone uses, since it always has room
+ * around it) would be clipped at the viewport edge; an inset shadow has no
+ * such risk at the very edge of the window.
+ */
+.axis-app.axis-app--drop-active {
+  box-shadow: inset 0 0 0 2px var(--axis-accent-border);
+  background: var(--axis-accent-soft);
+  transition: background-color var(--axis-duration-fast) var(--axis-ease-standard);
+}
+
+/* ---------------------------- Ambient background ---------------------------- */
+/*
+ * A deliberately restrained, low-contrast atmosphere behind the interface:
+ * two large, heavily blurred, very low-opacity shapes drifting slowly. It
+ * sits at z-index 0 inside the already-`position: relative` `.axis-app`;
+ * the sidebar and main content are explicitly raised to z-index 1 so the
+ * animation can never sit on top of (or interfere with) real UI, text, or
+ * controls. Built from plain CSS only — no animation library. Reduced
+ * motion is handled both by the blanket rule in tokens.css (which already
+ * matches ordinary elements like these) and, for defence in depth, by the
+ * explicit override just below.
+ */
+.axis-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.axis-ambient__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.14;
+  will-change: transform;
+}
+
+.axis-ambient__blob--a {
+  width: 620px;
+  height: 620px;
+  top: -200px;
+  left: 4%;
+  background: radial-gradient(circle, var(--axis-accent) 0%, transparent 70%);
+  animation: axis-ambient-drift-a 52s ease-in-out infinite alternate;
+}
+
+.axis-ambient__blob--b {
+  width: 540px;
+  height: 540px;
+  bottom: -220px;
+  right: 6%;
+  background: radial-gradient(circle, var(--axis-border-strong) 0%, transparent 72%);
+  animation: axis-ambient-drift-b 64s ease-in-out infinite alternate;
+}
+
+@keyframes axis-ambient-drift-a {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(48px, 36px, 0) scale(1.08);
+  }
+}
+
+@keyframes axis-ambient-drift-b {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-42px, -28px, 0) scale(1.05);
+  }
+}
+
+[data-motion="reduced"] .axis-ambient__blob {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="expressive"]) .axis-ambient__blob {
+    animation: none;
+  }
+}
+
+.axis-app[data-sidebar="collapsed"] {
+  grid-template-columns: var(--axis-sidebar-width-collapsed) 1fr;
+}
+
+/* ---------------------------- Sidebar ---------------------------- */
+
+.axis-sidebar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--axis-bg-raised);
+  border-right: 1px solid var(--axis-border-subtle);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.axis-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--axis-space-3);
+  padding: var(--axis-space-5) var(--axis-space-5) var(--axis-space-4);
+  min-height: 32px;
+}
+
+.axis-sidebar__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--axis-radius-md);
+  background: linear-gradient(155deg, var(--axis-accent) 0%, var(--axis-accent-strong) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--axis-text-inverse);
+  font-weight: var(--axis-weight-bold);
+  font-size: var(--axis-text-md);
+  flex-shrink: 0;
+  letter-spacing: -0.02em;
+}
+
+.axis-sidebar__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity var(--axis-duration-fast) var(--axis-ease-standard);
+}
+
+.axis-sidebar__name {
+  font-size: var(--axis-text-md);
+  font-weight: var(--axis-weight-semibold);
+  letter-spacing: 0.01em;
+  color: var(--axis-text-primary);
+}
+
+.axis-sidebar__tagline {
+  font-size: var(--axis-text-xs);
+  color: var(--axis-text-muted);
+}
+
+.axis-app[data-sidebar="collapsed"] .axis-sidebar__brand {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.axis-app[data-sidebar="collapsed"] .axis-sidebar__brand-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.axis-app[data-sidebar="collapsed"] .axis-nav__item {
+  justify-content: center;
+  gap: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.axis-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--axis-space-1);
+  padding: var(--axis-space-3);
+  flex: 1;
+  overflow-y: auto;
+}
+
+.axis-nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--axis-space-3);
+  padding: var(--axis-space-3) var(--axis-space-3);
+  border-radius: var(--axis-radius-md);
+  color: var(--axis-text-secondary);
+  font-size: var(--axis-text-sm);
+  font-weight: var(--axis-weight-medium);
+  border-left: 3px solid transparent;
+  transition: background-color var(--axis-duration-fast) var(--axis-ease-standard),
+    color var(--axis-duration-fast) var(--axis-ease-standard),
+    border-color var(--axis-duration-fast) var(--axis-ease-standard),
+    justify-content var(--axis-duration-base) var(--axis-ease-standard),
+    gap var(--axis-duration-base) var(--axis-ease-standard),
+    padding var(--axis-duration-base) var(--axis-ease-standard);
+  width: 100%;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.axis-nav__item:hover {
+  background: var(--axis-bg-hover);
+  color: var(--axis-text-primary);
+}
+
+.axis-nav__item[aria-current="page"] {
+  background: var(--axis-accent-soft);
+  color: var(--axis-text-primary);
+  border-left-color: var(--axis-accent);
+}
+
+.axis-nav__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.axis-nav__label {
+  overflow: hidden;
+  max-width: 180px;
+  opacity: 1;
+  transition: opacity var(--axis-duration-fast) var(--axis-ease-standard),
+    max-width var(--axis-duration-base) var(--axis-ease-standard);
+}
+
+.axis-app[data-sidebar="collapsed"] .axis-nav__label {
+  opacity: 0;
+  max-width: 0;
+}
+
+.axis-sidebar__footer {
+  padding: var(--axis-space-3);
+  border-top: 1px solid var(--axis-border-subtle);
+  display: flex;
+  flex-direction: column;
+  gap: var(--axis-space-1);
+}
+
+.axis-sidebar__collapse-icon {
+  transition: transform var(--axis-duration-base) var(--axis-ease-standard);
+}
+
+.axis-sidebar__toggle--expand .axis-sidebar__collapse-icon {
+  transform: rotate(180deg);
+}
+
+/* ---------------------------- Main content ---------------------------- */
+
+.axis-main {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.axis-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--axis-space-4);
+  padding: var(--axis-space-4) var(--axis-space-7);
+  border-bottom: 1px solid var(--axis-border-subtle);
+  min-height: 32px;
+  -webkit-app-region: drag;
+}
+
+.axis-topbar * {
+  -webkit-app-region: no-drag;
+}
+
+.axis-topbar__title {
+  font-size: var(--axis-text-sm);
+  font-weight: var(--axis-weight-semibold);
+  color: var(--axis-text-secondary);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.axis-topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--axis-space-2);
+}
+
+.axis-view-host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.axis-view {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--axis-space-8) var(--axis-space-7) var(--axis-space-9);
+}
+
+.axis-view[hidden] {
+  display: none;
+}
+
+/* A gentle entrance for whichever view just became visible. Toggling the
+   `hidden` attribute off re-triggers this animation, and it is fully
+   neutralized by the reduced-motion rules in tokens.css. */
+.axis-view:not([hidden]) {
+  animation: axis-view-enter var(--axis-duration-slow) var(--axis-ease-standard);
+}
+
+@keyframes axis-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.axis-view__inner {
+  max-width: var(--axis-content-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--axis-space-7);
+  min-width: 0;
+}
+
+/* Below this width there usually isn't room for a labelled sidebar without
+   crowding the workspace — fall back to the same icon-only presentation
+   used by the manual collapse control, including its tooltips. */
+@media (max-width: 900px) {
+  .axis-app {
+    grid-template-columns: var(--axis-sidebar-width-collapsed) 1fr;
+  }
+
+  .axis-sidebar__brand {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .axis-sidebar__brand-text {
+    opacity: 0;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .axis-nav__item {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .axis-nav__label {
+    opacity: 0;
+    max-width: 0;
+  }
+
+  .axis-view {
+    padding: var(--axis-space-6) var(--axis-space-5) var(--axis-space-8);
+  }
+}
+
+@media (max-width: 620px) {
+  .axis-topbar {
+    padding: var(--axis-space-3) var(--axis-space-4);
+  }
+
+  .axis-view {
+    padding: var(--axis-space-5) var(--axis-space-4) var(--axis-space-7);
+  }
+}

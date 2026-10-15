@@ -1,0 +1,141 @@
+/*
+ * AXIS design tokens.
+ * Single source of truth for colour, type, spacing, radius and motion.
+ * Screens and components must consume these variables rather than
+ * hard-coding values, so the whole UI stays visually consistent and
+ * themeable from Settings.
+ */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- Surfaces: charcoal / graphite / slate ---- */
+  --axis-bg-canvas: #0f1114;
+  --axis-bg-app: #15171c;
+  --axis-bg-raised: #1b1e24;
+  --axis-bg-panel: #20232a;
+  --axis-bg-card: #262a32;
+  --axis-bg-hover: #2c313a;
+  --axis-bg-pressed: #31363f;
+  --axis-bg-overlay: rgba(10, 11, 14, 0.72);
+
+  --axis-border-subtle: #272b33;
+  --axis-border: #343a44;
+  --axis-border-strong: #454c58;
+
+  /* ---- Typography ---- */
+  --axis-text-primary: #f4f5f7;
+  --axis-text-secondary: #c2c6cf;
+  --axis-text-muted: #8c93a0;
+  --axis-text-disabled: #596070;
+  --axis-text-inverse: #10121a;
+
+  --axis-font-sans: -apple-system, "Segoe UI Variable", "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial,
+    sans-serif;
+  --axis-font-mono: "Cascadia Code", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+
+  --axis-text-xs: 12px;
+  --axis-text-sm: 13px;
+  --axis-text-base: 14.5px;
+  --axis-text-md: 16px;
+  --axis-text-lg: 19px;
+  --axis-text-xl: 24px;
+  --axis-text-2xl: 32px;
+  --axis-text-3xl: 40px;
+
+  --axis-leading-tight: 1.2;
+  --axis-leading-normal: 1.5;
+  --axis-leading-relaxed: 1.7;
+
+  --axis-weight-regular: 400;
+  --axis-weight-medium: 500;
+  --axis-weight-semibold: 600;
+  --axis-weight-bold: 700;
+
+  /* ---- Accent: restrained blue (default theme) ---- */
+  --axis-accent: #5a8dee;
+  --axis-accent-strong: #4876d6;
+  --axis-accent-soft: rgba(90, 141, 238, 0.14);
+  --axis-accent-border: rgba(90, 141, 238, 0.38);
+  --axis-accent-text: #bfd3fb;
+
+  --axis-success: #4fae82;
+  --axis-warning: #d6a64f;
+  --axis-danger: #d9685f;
+  --axis-danger-soft: rgba(217, 104, 95, 0.14);
+
+  /* ---- Spacing scale (4px base unit) ---- */
+  --axis-space-1: 4px;
+  --axis-space-2: 8px;
+  --axis-space-3: 12px;
+  --axis-space-4: 16px;
+  --axis-space-5: 20px;
+  --axis-space-6: 24px;
+  --axis-space-7: 32px;
+  --axis-space-8: 40px;
+  --axis-space-9: 56px;
+  --axis-space-10: 72px;
+
+  /* ---- Radii ---- */
+  --axis-radius-sm: 6px;
+  --axis-radius-md: 10px;
+  --axis-radius-lg: 14px;
+  --axis-radius-xl: 20px;
+  --axis-radius-pill: 999px;
+
+  /* ---- Elevation (soft, no glow) ---- */
+  --axis-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --axis-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.32);
+  --axis-shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.38);
+
+  /* ---- Motion ---- */
+  --axis-duration-fast: 120ms;
+  --axis-duration-base: 180ms;
+  --axis-duration-slow: 260ms;
+  --axis-ease-standard: cubic-bezier(0.2, 0.0, 0.2, 1);
+
+  /* ---- Layout ---- */
+  --axis-sidebar-width: 248px;
+  --axis-sidebar-width-collapsed: 76px;
+  --axis-content-max-width: 920px;
+
+  /* ---- Focus ---- */
+  --axis-focus-ring: 0 0 0 2px var(--axis-bg-app), 0 0 0 4px var(--axis-accent);
+}
+
+/* Alternate restrained accent: graphite — a de-saturated, cooler option for
+   users who prefer less blue. Toggled from Settings via [data-accent]. */
+[data-accent="graphite"] {
+  --axis-accent: #8b93a6;
+  --axis-accent-strong: #747d92;
+  --axis-accent-soft: rgba(139, 147, 166, 0.14);
+  --axis-accent-border: rgba(139, 147, 166, 0.38);
+  --axis-accent-text: #d6d9e1;
+}
+
+/* Compact density: tighter rhythm, toggled via [data-density="compact"]. */
+[data-density="compact"] {
+  --axis-space-4: 12px;
+  --axis-space-5: 16px;
+  --axis-space-6: 18px;
+  --axis-space-7: 24px;
+  --axis-space-8: 28px;
+  --axis-sidebar-width: 212px;
+}
+
+/* Motion override forced from Settings, independent of OS preference. */
+[data-motion="reduced"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion="expressive"]) * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
