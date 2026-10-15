@@ -1,0 +1,33 @@
+{
+  "name": "axis",
+  "version": "0.1.0",
+  "description": "AXIS — One AI. Every Tool. Installable Windows desktop application shell (Phase 1 foundation).",
+  "private": true,
+  "main": "dist/main/main.js",
+  "author": "Sarthak Bharambe",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cybervault-Hacky/Axis.git"
+  },
+  "scripts": {
+    "dev:renderer": "vite",
+    "build:renderer": "vite build",
+    "build:main": "tsc -p tsconfig.main.json",
+    "build": "npm run build:renderer && npm run build:main",
+    "electron": "npm run build:main && electron .",
+    "dev:electron": "npm run build:main && cross-env AXIS_DEV_SERVER_URL=http://localhost:5173 electron .",
+    "typecheck": "tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "cross-env": "^7.0.3",
+    "electron": "^31.3.1",
+    "jsdom": "^24.1.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.1",
+    "vitest": "^2.0.5"
+  }
+}

@@ -1,0 +1,111 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--axis-bg-canvas);
+  color: var(--axis-text-primary);
+  font-family: var(--axis-font-sans);
+  font-size: var(--axis-text-base);
+  line-height: var(--axis-leading-normal);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+figure {
+  margin: 0;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+svg {
+  display: block;
+  flex-shrink: 0;
+}
+
+::selection {
+  background: var(--axis-accent-soft);
+  color: var(--axis-text-primary);
+}
+
+/* Scrollbars: subtle, consistent with the charcoal surface language. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--axis-border-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--axis-border-strong);
+  border-radius: var(--axis-radius-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Visible, consistent keyboard focus across every interactive element. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--axis-accent);
+  outline-offset: 2px;
+  border-radius: var(--axis-radius-sm);
+}
+
+.axis-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
